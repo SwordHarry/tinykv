@@ -20,7 +20,7 @@ const (
 	CfLock    string = "lock"
 )
 
-var CFs [3]string = [3]string{CfDefault, CfWrite, CfLock}
+var CFs = [3]string{CfDefault, CfWrite, CfLock}
 
 func (wb *WriteBatch) Len() int {
 	return len(wb.entries)

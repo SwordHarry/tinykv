@@ -48,16 +48,16 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile)
 	log.Infof("Server started with conf %+v", conf)
 
-	var storage storage.Storage
+	var sto storage.Storage
 	if conf.Raft {
-		storage = raft_storage.NewRaftStorage(conf)
+		sto = raft_storage.NewRaftStorage(conf)
 	} else {
-		storage = standalone_storage.NewStandAloneStorage(conf)
+		sto = standalone_storage.NewStandAloneStorage(conf)
 	}
-	if err := storage.Start(); err != nil {
+	if err := sto.Start(); err != nil {
 		log.Fatal(err)
 	}
-	server := server.NewServer(storage)
+	ser := server.NewServer(sto)
 
 	var alivePolicy = keepalive.EnforcementPolicy{
 		MinTime:             2 * time.Second, // If a client pings more than once every 2 seconds, terminate the connection
@@ -70,7 +70,7 @@ func main() {
 		grpc.InitialConnWindowSize(1<<30),
 		grpc.MaxRecvMsgSize(10*1024*1024),
 	)
-	tinykvpb.RegisterTinyKvServer(grpcServer, server)
+	tinykvpb.RegisterTinyKvServer(grpcServer, ser)
 	listenAddr := conf.StoreAddr[strings.IndexByte(conf.StoreAddr, ':'):]
 	l, err := net.Listen("tcp", listenAddr)
 	if err != nil {
